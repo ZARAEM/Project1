@@ -61,18 +61,19 @@ If your screen is flickering, remember that you have to, _in order_:
 enum AppStatus { RUNNING, TERMINATED };
 
 // Game Window Size
-constexpr int WINDOW_WIDTH = 640,
-WINDOW_HEIGHT = 480;
+constexpr int WINDOW_WIDTH = 640 * 2,
+WINDOW_HEIGHT = 480 * 2;
 
-// Background Color
-constexpr float BG_RED = 0.9765625f,
-BG_GREEN = 0.97265625f,
-BG_BLUE = 0.9609375f,
-BG_OPACITY = 1.0f;
+// Background Color from 0-1
+constexpr float BG_RED = (float) 255/255,
+BG_GREEN = (float) 255/255,
+BG_BLUE = (float) 255/255,
+BG_OPACITY = (float) 1;
 
 // Viewport (Basically the Camera)
 constexpr int VIEWPORT_X = 0,
 VIEWPORT_Y = 0,
+
 VIEWPORT_WIDTH = WINDOW_WIDTH,
 VIEWPORT_HEIGHT = WINDOW_HEIGHT;
 
@@ -84,22 +85,22 @@ F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 constexpr float MILLISECONDS_IN_SECOND = 1000.0;
 
 // Number of Textures Generated
-constexpr GLint NUMBER_OF_TEXTURES = 1,
+constexpr GLint NUMBER_OF_TEXTURES = 2,
 
 /* Don't Pay Attention to these Two */
 LEVEL_OF_DETAIL = 0,
 TEXTURE_BORDER = 0;
 
 // Path to Sprites
-constexpr char KANO_SPRITE_FILEPATH[] = "assets/",
-MAHIRU_SPRITE_FILEPATH[] = "assets/";
+constexpr char PENGUIN_BLUE_FILEPATH[] = "assets/penguin_blue",
+PUFFLE_ORANGE_FILEPATH[] = "assets/puffle_orange";
 
 // Initial Scale of Sprites
 constexpr glm::vec3 INIT_SCALE = glm::vec3(2.5f, 5.263f, 0.0f),
 
 // Initial Position of Sprites
-INIT_POS_KANO = glm::vec3(2.0f, 0.0f, 0.0f),
-INIT_POS_MAHIRU = glm::vec3(-2.0f, 0.0f, 0.0f);
+INIT_POS_PENGUIN_BLUE = glm::vec3(0.0f, 0.0f, 0.0f),
+INIT_POS_PUFFLE_ORANGE = glm::vec3(0.0f, 0.0f, 0.0f);
 
 // Rotational Increment
 constexpr float ROT_INCREMENT = 1.0f;
@@ -109,45 +110,45 @@ AppStatus g_app_status = RUNNING;
 ShaderProgram g_shader_program = ShaderProgram();
 
 glm::mat4 g_view_matrix,
-g_kano_matrix,
-g_mahiru_matrix,
+g_penguin_matrix,
+g_puffle_matrix,
 g_projection_matrix;
 
 float g_previous_ticks = 0.0f;
 
-glm::vec3 g_rotation_kano = glm::vec3(0.0f, 0.0f, 0.0f),
-g_rotation_mahiru = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_rotation_penguin = glm::vec3(0.0f, 0.0f, 0.0f),
+g_rotation_puffle = glm::vec3(0.0f, 0.0f, 0.0f);
 
-GLuint g_kano_texture_id,
-g_mahiru_texture_id;
+GLuint g_penguin_texture_id,
+g_puffle_texture_id;
 
 
-GLuint load_texture(const char* filepath)
+gluint load_texture(const char* filepath)
 {
-    // STEP 1: Loading the image file
+    // step 1: loading the image file
     int width, height, number_of_components;
-    unsigned char* image = stbi_load(filepath, &width, &height, &number_of_components, STBI_rgb_alpha);
+    unsigned char* image = stbi_load(filepath, &width, &height, &number_of_components, stbi_rgb_alpha);
 
-    if (image == NULL)
-    {
-        LOG("Unable to load image. Make sure the path is correct.");
-        assert(false);
-    }
+    //if (image == null)
+    //{
+    //    log("unable to load image. make sure the path is correct.");
+    //    assert(false);
+    //}
 
-    // STEP 2: Generating and binding a texture ID to our image
-    GLuint textureID;
-    glGenTextures(NUMBER_OF_TEXTURES, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, LEVEL_OF_DETAIL, GL_RGBA, width, height, TEXTURE_BORDER, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    //// step 2: generating and binding a texture id to our image
+    //gluint textureid;
+    //glgentextures(number_of_textures, &textureid);
+    //glbindtexture(gl_texture_2d, textureid);
+    //glteximage2d(gl_texture_2d, level_of_detail, gl_rgba, width, height, texture_border, gl_rgba, gl_unsigned_byte, image);
 
-    // STEP 3: Setting our texture filter parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //// step 3: setting our texture filter parameters
+    //gltexparameteri(gl_texture_2d, gl_texture_min_filter, gl_nearest);
+    //gltexparameteri(gl_texture_2d, gl_texture_mag_filter, gl_nearest);
 
-    // STEP 4: Releasing our file from memory and returning our texture id
-    stbi_image_free(image);
+    //// step 4: releasing our file from memory and returning our texture id
+    //stbi_image_free(image);
 
-    return textureID;
+    //return textureid;
 }
 
 
@@ -179,23 +180,23 @@ void initialise()
 
     g_shader_program.load(V_SHADER_PATH, F_SHADER_PATH);
 
-    g_kano_matrix = glm::mat4(1.0f);
-    g_mahiru_matrix = glm::mat4(1.0f);
-    g_view_matrix = glm::mat4(1.0f);
-    g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
+    //g_kano_matrix = glm::mat4(1.0f);
+    //g_mahiru_matrix = glm::mat4(1.0f);
+    //g_view_matrix = glm::mat4(1.0f);
+    //g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
 
-    g_shader_program.set_projection_matrix(g_projection_matrix);
-    g_shader_program.set_view_matrix(g_view_matrix);
+    //g_shader_program.set_projection_matrix(g_projection_matrix);
+    //g_shader_program.set_view_matrix(g_view_matrix);
 
-    glUseProgram(g_shader_program.get_program_id());
+    //glUseProgram(g_shader_program.get_program_id());
 
-    glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
+    glClearColor(BG_RED, BG_GREEN, BG_BLUE, BG_OPACITY);
 
-    g_kano_texture_id = load_texture(KANO_SPRITE_FILEPATH);
-    g_mahiru_texture_id = load_texture(MAHIRU_SPRITE_FILEPATH);
+    //g_kano_texture_id = load_texture(KANO_SPRITE_FILEPATH);
+    //g_mahiru_texture_id = load_texture(MAHIRU_SPRITE_FILEPATH);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 
@@ -219,34 +220,34 @@ void update()
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
 
-    /* Game logic */
-    g_rotation_kano.y += ROT_INCREMENT * delta_time;
-    g_rotation_mahiru.y += -1 * ROT_INCREMENT * delta_time;
+    ///* Game logic */
+    //g_rotation_kano.y += ROT_INCREMENT * delta_time;
+    //g_rotation_mahiru.y += -1 * ROT_INCREMENT * delta_time;
 
-    /* Model matrix reset */
-    g_kano_matrix = glm::mat4(1.0f);
-    g_mahiru_matrix = glm::mat4(1.0f);
+    ///* Model matrix reset */
+    //g_kano_matrix = glm::mat4(1.0f);
+    //g_mahiru_matrix = glm::mat4(1.0f);
 
-    /* Transformations */
-    g_kano_matrix = glm::translate(g_kano_matrix, INIT_POS_KANO);
-    g_kano_matrix = glm::rotate(g_kano_matrix,
-        g_rotation_kano.y,
-        glm::vec3(0.0f, 1.0f, 0.0f));
-    g_kano_matrix = glm::scale(g_kano_matrix, INIT_SCALE);
+    ///* Transformations */
+    //g_kano_matrix = glm::translate(g_kano_matrix, INIT_POS_KANO);
+    //g_kano_matrix = glm::rotate(g_kano_matrix,
+    //    g_rotation_kano.y,
+    //    glm::vec3(0.0f, 1.0f, 0.0f));
+    //g_kano_matrix = glm::scale(g_kano_matrix, INIT_SCALE);
 
-    g_mahiru_matrix = glm::translate(g_mahiru_matrix, INIT_POS_MAHIRU);
-    g_mahiru_matrix = glm::rotate(g_mahiru_matrix,
-        g_rotation_mahiru.y,
-        glm::vec3(0.0f, 1.0f, 0.0f));
-    g_mahiru_matrix = glm::scale(g_mahiru_matrix, INIT_SCALE);
+    //g_mahiru_matrix = glm::translate(g_mahiru_matrix, INIT_POS_MAHIRU);
+    //g_mahiru_matrix = glm::rotate(g_mahiru_matrix,
+    //    g_rotation_mahiru.y,
+    //    glm::vec3(0.0f, 1.0f, 0.0f));
+    //g_mahiru_matrix = glm::scale(g_mahiru_matrix, INIT_SCALE);
 }
 
 
 void draw_object(glm::mat4& object_g_model_matrix, GLuint& object_texture_id)
 {
-    g_shader_program.set_model_matrix(object_g_model_matrix);
-    glBindTexture(GL_TEXTURE_2D, object_texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6); // we are now drawing 2 triangles, so use 6, not 3
+    //g_shader_program.set_model_matrix(object_g_model_matrix);
+    //glBindTexture(GL_TEXTURE_2D, object_texture_id);
+    //glDrawArrays(GL_TRIANGLES, 0, 6); // we are now drawing 2 triangles, so use 6, not 3
 }
 
 
@@ -254,35 +255,35 @@ void render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Vertices
-    float vertices[] =
-    {
-        -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f,  // triangle 1
-        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f   // triangle 2
-    };
+    //// Vertices
+    //float vertices[] =
+    //{
+    //    -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f,  // triangle 1
+    //    -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f   // triangle 2
+    //};
 
-    // Textures
-    float texture_coordinates[] =
-    {
-        0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,     // triangle 1
-        0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,     // triangle 2
-    };
+    //// Textures
+    //float texture_coordinates[] =
+    //{
+    //    0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,     // triangle 1
+    //    0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,     // triangle 2
+    //};
 
-    glVertexAttribPointer(g_shader_program.get_position_attribute(), 2, GL_FLOAT, false,
-        0, vertices);
-    glEnableVertexAttribArray(g_shader_program.get_position_attribute());
+    //glVertexAttribPointer(g_shader_program.get_position_attribute(), 2, GL_FLOAT, false,
+    //    0, vertices);
+    //glEnableVertexAttribArray(g_shader_program.get_position_attribute());
 
-    glVertexAttribPointer(g_shader_program.get_tex_coordinate_attribute(), 2, GL_FLOAT,
-        false, 0, texture_coordinates);
-    glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+    //glVertexAttribPointer(g_shader_program.get_tex_coordinate_attribute(), 2, GL_FLOAT,
+    //    false, 0, texture_coordinates);
+    //glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
 
-    // Bind texture
-    draw_object(g_kano_matrix, g_kano_texture_id);
-    draw_object(g_mahiru_matrix, g_mahiru_texture_id);
+    //// Bind texture
+    //draw_object(g_kano_matrix, g_kano_texture_id);
+    //draw_object(g_mahiru_matrix, g_mahiru_texture_id);
 
-    // We disable two attribute arrays now
-    glDisableVertexAttribArray(g_shader_program.get_position_attribute());
-    glDisableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+    //// We disable two attribute arrays now
+    //glDisableVertexAttribArray(g_shader_program.get_position_attribute());
+    //glDisableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
 
     SDL_GL_SwapWindow(g_display_window);
 }
